@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>放課後エクセル教室 - 猫の散歩道</title>
+    <style>
+        :root {
+            --bg-start: #fef3c7;
+            --bg-end: #fffbeb;
+            --header-cat: #d97706;
+            --button-cat: #f59e0b;
+            --button-hover: #d97706;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Helvetica Neue', Arial, 'ヒラギノ角ゴ Pro W3', sans-serif;
+            background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: #78350f;
+            overflow: hidden;
+        }
+
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            padding: 0 25px;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.95;
+        }
+
+        .post-container {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 0 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .post-container input[type="text"] {
+            flex: 1;
+            max-width: 500px;
+            padding: 10px 18px;
+            border: 2px solid #fde68a;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.95rem;
+            background: white;
+        }
+
+        .post-container input[type="text"]:focus {
+            border-color: var(--header-cat);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .post-container button {
+            background-color: var(--button-cat);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .post-container button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .post-container button:active {
+            transform: scale(0.96);
+        }
+
+        #stage {
+            position: absolute;
+            top: 110px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            overflow: hidden;
+        }
+
+        /* 猫コンテナ */
+        .cat-item {
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease-out;
+        }
+
+        .cat-item:hover {
+            transform: scale(1.15) !important;
+            z-index: 100 !important;
+        }
+
+        /* 吹き出し（コメント部分） */
+        .cat-bubble {
+            background: #ffffff;
+            border: 2px solid #f59e0b;
+            border-radius: 18px;
+            padding: 8px 14px;
+            box-shadow: 0 6px 15px rgba(217, 119, 6, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+            margin-bottom: 6px;
+            max-width: 220px;
+        }
+
+        /* 吹き出しのしっぽ */
+        .cat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 6px 0 6px;
+            border-style: solid;
+            border-color: #f59e0b transparent transparent transparent;
+        }
+
+        .bubble-text {
+            font-size: 0.9rem;
+            color: #78350f;
+            text-align: center;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .bubble-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: #d97706;
+            font-weight: bold;
+        }
+
+        /* 猫アイコンのサイズ */
+        .cat-body-wrap {
+            font-size: 3.2rem;
+            line-height: 1;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12));
+        }
+
+        .pop-effect {
+            position: absolute;
+            color: #d97706;
+            font-weight: bold;
+            font-size: 1.4rem;
+            pointer-events: none;
+            animation: popUp 0.8s forwards ease-out;
+            z-index: 1000;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @keyframes popUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-70px) scale(1); opacity: 0; }
+        }
+
+        /* 滑らかなトコトコ歩行アニメーション */
+        @keyframes walkSmooth1 {
+            0%   { transform: translate(0px, 0px) rotate(0deg); }
+            25%  { transform: translate(20px, -6px) rotate(2deg); }
+            50%  { transform: translate(40px, 0px) rotate(0deg); }
+            75%  { transform: translate(20px, 6px) rotate(-2deg); }
+            100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+
+        @keyframes walkSmooth2 {
+            0%   { transform: translate(0px, 0px) rotate(0deg); }
+            25%  { transform: translate(-20px, 6px) rotate(-2deg); }
+            50%  { transform: translate(-40px, 0px) rotate(0deg); }
+            75%  { transform: translate(-20px, -6px) rotate(2deg); }
+            100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🐾 放課後エクセル教室</h1>
+        <p>猫たちがトコトコ歩くエクセルのつぶやき・アイデア掲示板</p>
+    </header>
+
+    <div class="post-container">
+        <input type="text" id="commentInput" placeholder="猫に喋らせたいつぶやきを入力してください..." maxlength="30">
+        <button id="postBtn">猫を追加する 🐾</button>
+    </div>
+
+    <div id="stage"></div>
+
+    <script>
+        const stage = document.getElementById('stage');
+        const commentInput = document.getElementById('commentInput');
+        const postBtn = document.getElementById('postBtn');
+
+        const catIcons = ['🐱', '😸', '😺', '😻', '🐈', '🐈‍⬛'];
+        let comments = [];
+
+        // サーバーから最新の data.json を読み込む
+        async function fetchComments() {
+            try {
+                const res = await fetch('data.json?t=' + Date.now());
+                if (res.ok) {
+                    const newComments = await res.json();
+                    
+                    if (JSON.stringify(newComments) !== JSON.stringify(comments)) {
+                        comments = newComments;
+                        renderComments();
+                    }
+                }
+            } catch (e) {
+                console.error("データの取得に失敗しました:", e);
+            }
+        }
+
+        // 描画処理
+        function renderComments() {
+            document.querySelectorAll('.cat-item').forEach(el => el.remove());
+
+            const stageWidth = stage.clientWidth || window.innerWidth;
+            const stageHeight = stage.clientHeight || 500;
+
+            const count = comments.length;
+            const cols = Math.min(Math.ceil(Math.sqrt(count * 1.5)), 4);
+            const rows = Math.ceil(count / cols);
+
+            const cellWidth = stageWidth / cols;
+            const cellHeight = stageHeight / (rows || 1);
+
+            comments.forEach((item, index) => {
+                const catItem = document.createElement('div');
+                catItem.className = 'cat-item';
+
+                const c = index % cols;
+                const r = Math.floor(index / cols);
+
+                const randomX = Math.random() * (cellWidth * 0.3) + (cellWidth * 0.1);
+                const randomY = Math.random() * (cellHeight * 0.3) + (cellHeight * 0.1);
+
+                catItem.style.left = (c * cellWidth + randomX) + 'px';
+                catItem.style.top = (r * cellHeight + randomY) + 'px';
+
+                const animName = index % 2 === 0 ? 'walkSmooth1' : 'walkSmooth2';
+                const animDuration = 8 + (index % 3) * 2;
+                catItem.style.animation = `${animName} ${animDuration}s infinite ease-in-out`;
+
+                const catIcon = catIcons[index % catIcons.length];
+
+                catItem.innerHTML = `
+                    <div class="cat-bubble">
+                        <div class="bubble-text" title="${escapeHTML(item.text)}">${escapeHTML(item.text)}</div>
+                        <div class="bubble-footer">🐟 <span class="like-count">${item.likes}</span></div>
+                    </div>
+                    <div class="cat-body-wrap">${catIcon}</div>
+                `;
+
+                // クリックでお魚をあげる
+                catItem.addEventListener('click', (e) => {
+                    item.likes++;
+                    catItem.querySelector('.like-count').textContent = item.likes;
+                    createPopEffect(e.clientX, e.clientY);
+                    saveToServer();
+                });
+
+                stage.appendChild(catItem);
+            });
+        }
+
+        // サーバーへ保存依頼
+        async function saveToServer() {
+            try {
+                await fetch('/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(comments)
+                });
+            } catch (e) {
+                console.error("保存処理に失敗しました:", e);
+            }
+        }
+
+        function createPopEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'pop-effect';
+            effect.textContent = '+1 🐟';
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            document.body.appendChild(effect);
+
+            setTimeout(() => { effect.remove(); }, 800);
+        }
+
+        function handlePost() {
+            const text = commentInput.value.trim();
+            if (!text) return;
+
+            comments.push({
+                id: Date.now(),
+                text: text,
+                likes: 0
+            });
+
+            renderComments();
+            saveToServer();
+            commentInput.value = '';
+        }
+
+        postBtn.addEventListener('click', handlePost);
+        commentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handlePost();
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // 初回ロード時にデータを取得して強制描画
+        async function init() {
+            try {
+                const res = await fetch('data.json?t=' + Date.now());
+                if (res.ok) {
+                    comments = await res.json();
+                    renderComments();
+                }
+            } catch (e) {
+                console.error("初期データの取得に失敗しました:", e);
+            }
+        }
+
+        // 3秒ごとの自動更新
+        setInterval(fetchComments, 3000);
+
+        window.addEventListener('load', init);
+        window.addEventListener('resize', renderComments);
+    </script>
+</body>
+</html>
