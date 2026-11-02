@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, send_from_directory
-import random
 
 app = Flask(__name__, static_folder='.')
 
@@ -10,23 +9,18 @@ cats_db = []
 def index():
     return send_from_directory('.', 'index.html')
 
-@app.route('/api/cats', methods=['GET'])
-def get_cats():
+# index.html がデータを取得するために読みに行く場所
+@app.route('/data.json')
+def get_data_json():
     return jsonify(cats_db)
 
-@app.route('/api/cats', methods=['POST'])
-def add_cat():
+# index.html が投稿や「いいね」をしたときに保存しにくる場所
+@app.route('/save', methods=['POST'])
+def save_data():
+    global cats_db
     data = request.get_json()
-    if data and 'text' in data:
-        cat = {
-            'text': data['text'],
-            'x': random.randint(5, 80),
-            'y': random.randint(5, 80)
-        }
-        cats_db.append(cat)
-        # 最大20個まで保持
-        if len(cats_db) > 20:
-            cats_db.pop(0)
+    if data is not None:
+        cats_db = data
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
